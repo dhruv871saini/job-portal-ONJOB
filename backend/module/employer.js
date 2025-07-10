@@ -10,5 +10,5 @@ const employyeSchema=new mongoose.Schema({
 },{
     timestamps:true
 })
-const employee=mongoose.model('employee',employyeSchema)
-export default employee
+const employer=mongoose.model('employer',employyeSchema)
+export default employer

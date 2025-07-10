@@ -1,4 +1,4 @@
-const successResponse=(status,message, data)=>{
+const newResponse=(status,message, data)=>{
     res.status(status).json({message:message,data:data})
 }
-export default successResponse;
+export default newResponse;

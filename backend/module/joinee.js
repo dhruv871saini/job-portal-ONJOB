@@ -7,7 +7,7 @@ const joineeSchema= new mongoose.Schema({
     location:{type:String,require:true},
     skills:[{type:String}],
     experience:{type:Number,require:true},
-    // resume:{type:Number,require:true},
+    resume:{type:Number,require:true},
     otherUrl:{type:String},
     proiflePif:{type:String}
 
