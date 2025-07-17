@@ -20,3 +20,4 @@ const refreshTokenMiddleware = async (req, res, next) => {
         return errorResponse(403,"Invalid or expired refresh token ",error)
     }
 }
+export default refreshTokenMiddleware;

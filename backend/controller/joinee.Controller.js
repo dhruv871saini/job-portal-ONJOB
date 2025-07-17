@@ -2,6 +2,10 @@ import bcrypt from "bcryptjs";
 import joinee from "../module/joinee";
 import jwt from "jsonwebtoken";
 import { errorResponse, successResponse } from "../middleware/newResponse";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../middleware/generateToken";
 export const joinneeRegister = async (req, res) => {
   const {
     phone,
@@ -17,11 +21,11 @@ export const joinneeRegister = async (req, res) => {
   } = req.body;
 
   try {
-    const verifyPhoneEmail = await joinee.find({ $or:[{phone},{email}] });
-    if (verifyPhoneEmail.length>0) {
+    const verifyPhoneEmail = await joinee.find({ $or: [{ phone }, { email }] });
+    if (verifyPhoneEmail.length > 0) {
       return errorResponse(404, "Phone number and Email is already exist");
     }
-      if (
+    if (
       !phone ||
       !password ||
       !confirmPassword ||
@@ -37,7 +41,7 @@ export const joinneeRegister = async (req, res) => {
       return errorResponse(404, "password doesn't match ", 0);
     }
 
-    const hashPassword = await bcrypt.hash( password,10);
+    const hashPassword = await bcrypt.hash(password, 10);
     const joiny = new joinee({
       fullName,
       phone,
@@ -50,10 +54,15 @@ export const joinneeRegister = async (req, res) => {
       profilePic,
     });
     await joiny.save();
-    const token = jwt.sign({ id: joiny._id }, process.env.SECRETKEY, {
-      expiresIn: "5d",
-    });
-    return successResponse(201, "successfully Register", token);
+    const payload = { id: joiny._id };
+    const token = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
+    res.cookie("refreshToken",refreshToken,{
+      httpOnly:true,
+      sameSite:"Strict",
+      maxAge:15*24*60*60*1000
+    })
+    return successResponse(201, "successfully Register", {accessToken:token});
   } catch (error) {
     return errorResponse(500, "server error ", error);
   }
@@ -65,7 +74,7 @@ export const joineeLogin = async (req, res) => {
     if (!phone || !password) {
       return errorResponse(404, "ALL   ");
     }
-    const user = await joinee.find({ phone });
+    const user = await joinee.findOne({ phone });
     if (!user) {
       return errorResponse(404, "Phone number don't extist ");
     }
@@ -73,11 +82,16 @@ export const joineeLogin = async (req, res) => {
     if (!isMatch) {
       return errorResponse(404, "Wrong Password");
     }
-    const token = jwt.sign({ id: user._id }, process.env.SECRETKEY, {
-      expiresIn: "5d",
+    const payload = { id: user._id };
+    const token = generateAccessToken(payload);
+    const refreshToken = generateAccessToken(payload);
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      sameSite: "Strict",
+      maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days
     });
 
-    return successResponse(200, "Login Successfully", token);
+    return successResponse(200, "Login Successfully", { accessToken: token });
   } catch (error) {
     return errorResponse(500, "server error ", error);
   }

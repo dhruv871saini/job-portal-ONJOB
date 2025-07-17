@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import employer from "../module/employer";
 import { jwt } from "jsonwebtoken";
 import { errorResponse, successResponse } from "../middleware/newResponse";
+import { generateAccessToken, generateRefreshToken } from "../middleware/generateToken";
 
 export const employerRegister = async (req, res) => {
   const {
@@ -33,7 +34,7 @@ export const employerRegister = async (req, res) => {
     if (companyConfirmPassword != companyPassword) {
       return errorResponse(400, "Password are not match");
     }
-    const hashPassword = await bcrypt.hash(10, companyPassword);
+    const hashPassword = await bcrypt.hash( companyPassword,10);
     const newEmplyer = new employer({
       companyEmail,
       companyLocation,
@@ -43,10 +44,16 @@ export const employerRegister = async (req, res) => {
       companyProfilePic,
       companyUrl
     });
-    newEmplyer.save()
-    
-    const token= jwt.sign({id:newEmplyer._id},process.env.SECRET_KEY,{expire:"5d"})
-    return successResponse(201,"Register Successfully",token)
+    await newEmplyer.save()
+    const payload ={id:newEmplyer._id}
+    const token=generateAccessToken(payload) 
+    const refreshToken=generateRefreshToken(payload)
+    res.cookie("refreshToken",refreshToken,{
+      httpOnly:true,
+      sameSite:"Strict",
+      maxAge:15*24*60*60*1000
+    })
+    return successResponse(201,"Register Successfully",{accessToken:token})
   } catch (error) {
     return errorResponse(500,"server error ",error)
   }
@@ -59,7 +66,7 @@ export const employerLogin =async (req,res)=>{
     return errorResponse(400,"Fill all required filled")
   }
    
-  const existingUser=await employer.find({
+  const existingUser=await employer.findOne({
     $or:[{companyEmail:identity},{companyPhone:identity}]
   })
 
@@ -68,10 +75,17 @@ export const employerLogin =async (req,res)=>{
   }
   const matchPassword= await bcrypt.compare(companyPassword,existingUser.companyPassword)
   if(!matchPassword){
-    return errorResponser(400,"Wrong password")
+    return errorResponse(400,"Wrong password")
   }
-  const token = jwt.sign({id:existingUser._id},process.env.SECRET_KEY,{expiresIn:'5d'})
-  return successResponse(200," User Login Successfully",token)
+  const payload ={id :existingUser._id}
+  const token =generateAccessToken(payload)
+  const refreshToken=generateRefreshToken(payload)
+  res.cookie("refreshToken",refreshToken,{
+    httpOnly:true,
+    sameSite:"Strict",
+    maxAge:15*24*60*60*1000
+  })
+  return successResponse(200," User Login Successfully",{accessToken:token})
   } catch (error) {
     return errorResponse(500,"server error ",error)
   }
@@ -80,7 +94,7 @@ export const employerLogin =async (req,res)=>{
 export const employerUpdate=async(req,res)=>{
  const {id}=req.body
  try {
-  if(id){
+  if(!id){
     return errorResponse(400,"User Id not found")
   }
   const verifyUser=await employer.findByIdAndUpdate({_id:id},req.body,{new:true})
@@ -98,7 +112,7 @@ export const employerUpdate=async(req,res)=>{
 export const employeeDelete=async(req,res)=>{
   const {id}=req.body;
   try {
-    if(id){
+    if(!id){
       return errorResponse(400,"User Id not found")
     }
     const verifyUser=await employer.findByIdAndDelete({_id:id})
