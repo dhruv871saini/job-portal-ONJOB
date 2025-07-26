@@ -55,12 +55,12 @@ export const employerRegister = async (req, res) => {
     })
     return successResponse(201,"Register Successfully",{accessToken:token})
   } catch (error) {
-    return errorResponse(500,"server error ",error)
+    return errorResponse(500, "server error ", error)
   }
 };
 
-export const employerLogin =async (req,res)=>{
-  const {identity,companyPassword}=req.body
+export const employerLogin = async (req, res) => {
+  const { identity, companyPassword } = req.body
   try {
     if(!identity||!companyPassword){
     return errorResponse(400,"Fill all required filled")
@@ -87,7 +87,7 @@ export const employerLogin =async (req,res)=>{
   })
   return successResponse(200," User Login Successfully",{accessToken:token})
   } catch (error) {
-    return errorResponse(500,"server error ",error)
+    return errorResponse(500, "server error ", error)
   }
 }
 
@@ -103,24 +103,24 @@ export const employerUpdate=async(req,res)=>{
   }
   return successResponse(200,"User Update successfully")
 
- } catch (error) {
-  return errorResponse(500,"Server Error ",error)
- } 
+  } catch (error) {
+    return errorResponse(500, "Server Error ", error)
+  }
 
 }
 
-export const employeeDelete=async(req,res)=>{
-  const {id}=req.body;
+export const employeeDelete = async (req, res) => {
+  const { id } = req.body;
   try {
     if(!id){
       return errorResponse(400,"User Id not found")
     }
-    const verifyUser=await employer.findByIdAndDelete({_id:id})
-    if(!verifyUser){
-      return errorResponse(400,"User not Delete")
+    const verifyUser = await employer.findByIdAndDelete({ _id: id })
+    if (!verifyUser) {
+      return errorResponse(400, "User not Delete")
     }
-    return successResponse(200,"User Delete Successfully")
+    return successResponse(200, "User Delete Successfully")
   } catch (error) {
-    return errorResponse(500,"server error ",error)
+    return errorResponse(500, "server error ", error)
   }
 }

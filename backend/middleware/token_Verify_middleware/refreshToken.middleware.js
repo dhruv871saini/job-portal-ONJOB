@@ -17,7 +17,7 @@ const refreshTokenMiddleware = async (req, res, next) => {
         const accesstoken = generateAccessToken({ id: user._id })
         return successResponse(200, "Refresh the token", accesstoken)
     } catch (error) {
-        return errorResponse(403,"Invalid or expired refresh token ",error)
+        return errorResponse(403, "Invalid or expired refresh token ", error)
     }
 }
 export default refreshTokenMiddleware;
