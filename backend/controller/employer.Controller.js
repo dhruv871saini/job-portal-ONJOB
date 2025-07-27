@@ -34,7 +34,7 @@ export const employerRegister = async (req, res) => {
     if (companyConfirmPassword != companyPassword) {
       return errorResponse(400, "Password are not match");
     }
-    const hashPassword = await bcrypt.hash( companyPassword,10);
+    const hashPassword = await bcrypt.hash(companyPassword, 10);
     const newEmplyer = new employer({
       companyEmail,
       companyLocation,
@@ -45,15 +45,15 @@ export const employerRegister = async (req, res) => {
       companyUrl
     });
     await newEmplyer.save()
-    const payload ={id:newEmplyer._id}
-    const token=generateAccessToken(payload) 
-    const refreshToken=generateRefreshToken(payload)
-    res.cookie("refreshToken",refreshToken,{
-      httpOnly:true,
-      sameSite:"Strict",
-      maxAge:15*24*60*60*1000
+    const payload = { id: newEmplyer._id }
+    const token = generateAccessToken(payload)
+    const refreshToken = generateRefreshToken(payload)
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      sameSite: "Strict",
+      maxAge: 15 * 24 * 60 * 60 * 1000
     })
-    return successResponse(201,"Register Successfully",{accessToken:token})
+    return successResponse(201, "Register Successfully", { accessToken: token })
   } catch (error) {
     return errorResponse(500, "server error ", error)
   }
@@ -62,46 +62,46 @@ export const employerRegister = async (req, res) => {
 export const employerLogin = async (req, res) => {
   const { identity, companyPassword } = req.body
   try {
-    if(!identity||!companyPassword){
-    return errorResponse(400,"Fill all required filled")
-  }
-   
-  const existingUser=await employer.findOne({
-    $or:[{companyEmail:identity},{companyPhone:identity}]
-  })
+    if (!identity || !companyPassword) {
+      return errorResponse(400, "Fill all required filled")
+    }
 
-  if(!existingUser){
-    return errorResponse(404,"User doesn't found")
-  }
-  const matchPassword= await bcrypt.compare(companyPassword,existingUser.companyPassword)
-  if(!matchPassword){
-    return errorResponse(400,"Wrong password")
-  }
-  const payload ={id :existingUser._id}
-  const token =generateAccessToken(payload)
-  const refreshToken=generateRefreshToken(payload)
-  res.cookie("refreshToken",refreshToken,{
-    httpOnly:true,
-    sameSite:"Strict",
-    maxAge:15*24*60*60*1000
-  })
-  return successResponse(200," User Login Successfully",{accessToken:token})
+    const existingUser = await employer.findOne({
+      $or: [{ companyEmail: identity }, { companyPhone: identity }]
+    })
+
+    if (!existingUser) {
+      return errorResponse(404, "User doesn't found")
+    }
+    const matchPassword = await bcrypt.compare(companyPassword, existingUser.companyPassword)
+    if (!matchPassword) {
+      return errorResponse(400, "Wrong password")
+    }
+    const payload = { id: existingUser._id }
+    const token = generateAccessToken(payload)
+    const refreshToken = generateRefreshToken(payload)
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      sameSite: "Strict",
+      maxAge: 15 * 24 * 60 * 60 * 1000
+    })
+    return successResponse(200, " User Login Successfully", { accessToken: token })
   } catch (error) {
     return errorResponse(500, "server error ", error)
   }
 }
 
-export const employerUpdate=async(req,res)=>{
- const {id}=req.body
- try {
-  if(!id){
-    return errorResponse(400,"User Id not found")
-  }
-  const verifyUser=await employer.findByIdAndUpdate({_id:id},req.body,{new:true})
-  if(!verifyUser){
-    return errorResponse(404,"User not update")
-  }
-  return successResponse(200,"User Update successfully")
+export const employerUpdate = async (req, res) => {
+  const { id } = req.body
+  try {
+    if (!id) {
+      return errorResponse(400, "User Id not found")
+    }
+    const verifyUser = await employer.findByIdAndUpdate({ _id: id }, req.body, { new: true })
+    if (!verifyUser) {
+      return errorResponse(404, "User not update")
+    }
+    return successResponse(200, "User Update successfully")
 
   } catch (error) {
     return errorResponse(500, "Server Error ", error)
@@ -112,8 +112,8 @@ export const employerUpdate=async(req,res)=>{
 export const employeeDelete = async (req, res) => {
   const { id } = req.body;
   try {
-    if(!id){
-      return errorResponse(400,"User Id not found")
+    if (!id) {
+      return errorResponse(400, "User Id not found")
     }
     const verifyUser = await employer.findByIdAndDelete({ _id: id })
     if (!verifyUser) {
